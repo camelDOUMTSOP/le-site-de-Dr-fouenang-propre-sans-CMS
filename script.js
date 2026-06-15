@@ -156,11 +156,34 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /** Fonction de chargement des articles **/
-function loadCMSPosts(container) {
-    // Par défaut, on affiche les articles en dur. Dès que Decap CMS enregistrera 
-    // des fichiers dans ton GitHub, on pourra mapper un tableau ou un index.
-    window._allPosts = BLOG_POSTS;
-    displayPosts(container, window._allPosts);
+/** Fonction de chargement des articles automatique **/
+async function loadCMSPosts(container) {
+    try {
+        // On charge l'unique fichier JSON qui contient tous les articles du CMS
+        const response = await fetch('/content/blog.json');
+        
+        if (!response.ok) {
+            // Si le fichier n'existe pas encore sur GitHub, on bascule sur le fallback
+            throw new Error("Fichier de blog CMS non initialisé");
+        }
+
+        const data = await response.json();
+        
+        // On vérifie que le CMS contient bien des articles dans sa liste
+        if (data && data.posts && data.posts.length > 0) {
+            // On fusionne : les articles du CMS en premier, puis tes articles par défaut
+            window._allPosts = [...data.posts, ...BLOG_POSTS];
+        } else {
+            window._allPosts = BLOG_POSTS;
+        }
+
+        displayPosts(container, window._allPosts);
+
+    } catch (error) {
+        console.warn("Lecture du CMS impossible ou vide, affichage des articles par défaut :", error);
+        window._allPosts = BLOG_POSTS;
+        displayPosts(container, window._allPosts);
+    }
 }
 
 function displayPosts(container, posts) {
