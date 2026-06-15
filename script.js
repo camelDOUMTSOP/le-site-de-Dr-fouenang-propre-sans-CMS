@@ -155,37 +155,50 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-/** Fonction de chargement des articles **/
-/** Fonction de chargement des articles automatique **/
+/** Fonction de chargement automatique via GitHub API **/
 async function loadCMSPosts(container) {
     try {
-        // On charge l'unique fichier JSON qui contient tous les articles du CMS
-        const response = await fetch('/content/blog.json');
+        // Remplace par tes vrais identifiants GitHub
+        const owner = "camelDOUMTSOP";
+        const repo = "le-site-de-Dr-fouenang-propre-sans-CMS";
+        const path = "content/blog";
+
+        // 1. On interroge l'API GitHub pour lister tous les fichiers du dossier blog
+        const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+        const response = await fetch(url);
         
         if (!response.ok) {
-            // Si le fichier n'existe pas encore sur GitHub, on bascule sur le fallback
-            throw new Error("Fichier de blog CMS non initialisé");
+            throw new Error("Dossier CMS non encore créé ou vide");
         }
 
-        const data = await response.json();
+        const files = await response.json();
         
-        // On vérifie que le CMS contient bien des articles dans sa liste
-        if (data && data.posts && data.posts.length > 0) {
-            // On fusionne : les articles du CMS en premier, puis tes articles par défaut
-            window._allPosts = [...data.posts, ...BLOG_POSTS];
-        } else {
+        // On ne garde que les fichiers .json
+        const jsonFiles = files.filter(file => file.name.endsWith('.json'));
+
+        if (jsonFiles.length === 0) {
             window._allPosts = BLOG_POSTS;
+            displayPosts(container, window._allPosts);
+            return;
         }
 
+        // 2. On télécharge le contenu de chaque fichier JSON trouvé
+        const fetchPromises = jsonFiles.map(file => 
+            fetch(file.download_url).then(res => res.json())
+        );
+
+        const cmsPosts = await Promise.all(fetchPromises);
+        
+        // 3. On affiche (les articles du CMS d'abord, puis les fallbacks)
+        window._allPosts = [...cmsPosts, ...BLOG_POSTS];
         displayPosts(container, window._allPosts);
 
     } catch (error) {
-        console.warn("Lecture du CMS impossible ou vide, affichage des articles par défaut :", error);
+        console.warn("Récupération CMS impossible, affichage des articles par défaut :", error);
         window._allPosts = BLOG_POSTS;
         displayPosts(container, window._allPosts);
     }
 }
-
 function displayPosts(container, posts) {
     container.innerHTML = '';
     posts.forEach((post, index) => {
