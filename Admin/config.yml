@@ -6,21 +6,15 @@ media_folder: "images/uploads"
 public_folder: "/images/uploads"
 
 collections:
-  - name: "data"
-    label: "Données du site"
-    files:
-      - name: "blog"
-        label: "Articles de Blog"
-        file: "content/blog.json" # Un seul fichier qui contiendra TOUS les articles
-        format: "json"
-        fields:
-          - name: "posts"
-            label: "Liste des articles"
-            widget: "list"
-            allow_add: true
-            fields:
-              - { label: "Catégorie / Tag", name: "tag", widget: "string", default: "Conseil" }
-              - { label: "Titre de l'article", name: "title", widget: "string" }
-              - { label: "Description courte", name: "desc", widget: "string" }
-              - { label: "Image de couverture", name: "img", widget: "image" }
-              - { label: "Contenu de l'article (HTML autorisé)", name: "content", widget: "code", default_language: "html" }
+  - name: "blog"
+    label: "Articles de Blog"
+    folder: "content/blog" # Le CMS crée un fichier par article ici
+    create: true
+    slug: "{{slug}}"
+    extension: "json"
+    format: "json"
+    fields:
+      - { label: "Titre de l'article", name: "title", widget: "string" }
+      - { label: "Description courte", name: "desc", widget: "string" }
+      - { label: "Image de couverture", name: "img", widget: "image" }
+      - { label: "Contenu de l'article", name: "content", widget: "markdown" }

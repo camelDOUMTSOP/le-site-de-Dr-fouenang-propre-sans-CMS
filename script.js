@@ -242,10 +242,24 @@ function closeModal() { document.getElementById('modal-rdv')?.classList.replace(
 
 function openBlog(index) {
     const post = (window._allPosts || BLOG_POSTS)[index];
+    
+    // Si le contenu vient du CMS, on nettoie et formate le texte proprement
+    let formattedContent = post.content || post.body || '';
+    
+    // Si c'est du texte brut/markdown, on convertit les **gras** et les sauts de ligne
+    if (formattedContent && !formattedContent.includes('<p>')) {
+        formattedContent = formattedContent
+            // Convertit les **texte** en <strong>texte</strong>
+            .replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-800 font-bold">$1</strong>')
+            // Convertit les sauts de ligne doubles en paragraphes
+            .split('\n\n').map(para => `<p class="mb-4 text-slate-600 leading-relaxed">${para}</p>`).join('');
+    }
+
     document.getElementById('blog-modal-img').src = post.img;
     document.getElementById('blog-modal-tag').textContent = post.tag;
     document.getElementById('blog-modal-title').textContent = post.title;
-    document.getElementById('blog-modal-content').innerHTML = post.content || post.body;
+    document.getElementById('blog-modal-content').innerHTML = formattedContent;
+    
     document.getElementById('modal-blog').classList.replace('hidden', 'flex');
     document.body.style.overflow = 'hidden';
 }
