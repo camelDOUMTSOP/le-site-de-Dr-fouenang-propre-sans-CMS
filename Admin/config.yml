@@ -1,5 +1,5 @@
 backend:
-  name: github
+  name: git-gateway
   repo: camelDOUMTSOP/le-site-de-Dr-fouenang-propre-sans-CMS
   branch: main
 
