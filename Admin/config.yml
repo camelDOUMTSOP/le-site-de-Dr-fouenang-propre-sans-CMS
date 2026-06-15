@@ -1,0 +1,22 @@
+backend:
+  name: github
+  repo: camelDOUMTSOP/le-site-de-Dr-fouenang-propre-sans-CMS
+  branch: main
+
+media_folder: "images/uploads" # Où seront stockées les images chargées par le docteur
+public_folder: "/images/uploads"
+
+collections:
+  - name: "blog"
+    label: "Articles de Blog"
+    folder: "content/blog" # Le CMS va créer ce dossier et y placer les articles
+    create: true
+    slug: "{{slug}}"
+    extension: "json" # On génère du JSON pour que ton JS puisse le lire facilement !
+    format: "json"
+    fields:
+      - { label: "Catégorie / Tag", name: "tag", widget: "string", default: "Conseil" }
+      - { label: "Titre de l'article", name: "title", widget: "string" }
+      - { label: "Description courte", name: "desc", widget: "string" }
+      - { label: "Image de couverture", name: "img", widget: "image" }
+      - { label: "Contenu de l'article (HTML autorisé)", name: "content", widget: "code", default_language: "html" }
