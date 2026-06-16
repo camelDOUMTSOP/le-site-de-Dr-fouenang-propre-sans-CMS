@@ -44,7 +44,7 @@ const BLOG_POSTS = [
         content: `
             <p>Le brossage des dents est un geste quotidien que nous faisons tous, mais très peu le font correctement. Voici les 5 erreurs les plus fréquentes observées au cabinet par le Dr Patrick Fouenang.</p>
             <h4 class="font-bold text-slate-800 text-base mt-4">1. Se brosser les dents trop vite</h4>
-            <p>Un brossage efficace dure minimum <strong>2 minutes</strong>. La majorité des patients s'arrêtent à 30 secondes. Utilisez un minuteur ou une brosse électrique avec timer intégré.</p>
+            <p>Un brossage efficace durable minimum <strong>2 minutes</strong>. La majorité des patients s'arrêtent à 30 secondes. Utilisez un minuteur ou une brosse électrique avec timer intégré.</p>
             <h4 class="font-bold text-slate-800 text-base mt-4">2. Appuyer trop fort</h4>
             <p>Brosser fort n'enlève pas plus de plaque. Au contraire, cela abîme l'émail et fait reculer les gencives. Le mouvement doit être <strong>doux et circulaire</strong>.</p>
             <h4 class="font-bold text-slate-800 text-base mt-4">3. Oublier la langue et les gencives</h4>
@@ -103,6 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /* --- CHARGEMENT DES FLYERS CMS --- */
+    loadCMSFlyers('flyers-slider');
+
     /* --- GALERIE --- */
     const gSlider = document.getElementById('gallery-slider');
     if (gSlider) {
@@ -131,8 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
     /* --- BLOG (Lecture directe des fichiers JSON du CMS) --- */
     const bGrid = document.getElementById('blog-grid');
     if (bGrid) {
-        // Liste des fichiers d'articles gérés par le CMS (à mettre à jour ou charger dynamiquement)
-        // Pour l'instant, on tente de charger les posts CMS, sinon on prend le fallback statique
         loadCMSPosts(bGrid);
     }
 
@@ -142,28 +143,33 @@ document.addEventListener('DOMContentLoaded', () => {
     /* --- AUTO-DÉFILEMENT CAS CLINIQUES --- */
     setInterval(() => slideBA(1), 4000);
 
-    /* --- FORMULAIRE WHATSAPP --- */
+    /* --- FORMULAIRE WHATSAPP (CORRIGÉ & SÉCURISÉ) --- */
     const waForm = document.getElementById('whatsapp-form');
     if (waForm) {
         waForm.onsubmit = (e) => {
             e.preventDefault();
             const name = document.getElementById('p-name').value;
             const motif = document.getElementById('p-motif').value;
-            const text = `Bonjour Dr Patrick FOUENANG, je souhaite prendre RDV.\nNom: ${name}\nMotif: ${motif}`;
+            
+            // Sécurité UX : s'assure qu'un vrai motif a été sélectionné
+            if (!motif || motif === "") {
+                alert("Veuillez sélectionner un motif pour votre consultation.");
+                return;
+            }
+            
+            const text = `Bonjour Dr Patrick FOUENANG, je souhaite prendre RDV.\nNom: ${name}\n.Motif: ${motif}`;
             window.open(`https://wa.me/237699485207?text=${encodeURIComponent(text)}`, '_blank');
         };
     }
 });
 
-/** Fonction de chargement automatique via GitHub API **/
+/** Fonction de chargement automatique via GitHub API (Blog) **/
 async function loadCMSPosts(container) {
     try {
-        // Remplace par tes vrais identifiants GitHub
         const owner = "camelDOUMTSOP";
         const repo = "le-site-de-Dr-fouenang-propre-sans-CMS";
         const path = "content/blog";
 
-        // 1. On interroge l'API GitHub pour lister tous les fichiers du dossier blog
         const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
         const response = await fetch(url);
         
@@ -172,8 +178,6 @@ async function loadCMSPosts(container) {
         }
 
         const files = await response.json();
-        
-        // On ne garde que les fichiers .json
         const jsonFiles = files.filter(file => file.name.endsWith('.json'));
 
         if (jsonFiles.length === 0) {
@@ -182,14 +186,12 @@ async function loadCMSPosts(container) {
             return;
         }
 
-        // 2. On télécharge le contenu de chaque fichier JSON trouvé
         const fetchPromises = jsonFiles.map(file => 
             fetch(file.download_url).then(res => res.json())
         );
 
         const cmsPosts = await Promise.all(fetchPromises);
         
-        // 3. On affiche (les articles du CMS d'abord, puis les fallbacks)
         window._allPosts = [...cmsPosts, ...BLOG_POSTS];
         displayPosts(container, window._allPosts);
 
@@ -199,14 +201,19 @@ async function loadCMSPosts(container) {
         displayPosts(container, window._allPosts);
     }
 }
+
 function displayPosts(container, posts) {
     container.innerHTML = '';
     posts.forEach((post, index) => {
+        const tagHTML = post.tag 
+            ? `<span class="absolute top-4 left-4 bg-sky-600 text-white text-[10px] px-3 py-1 rounded-full font-bold uppercase">${post.tag}</span>`
+            : '';
+
         container.innerHTML += `
             <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition cursor-pointer group">
                 <div class="h-52 bg-slate-200 relative overflow-hidden">
                     <img src="${post.img}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://images.unsplash.com/photo-1588776814546-1ffbb172ef3a?w=800&auto=format&fit=crop'">
-                    <span class="absolute top-4 left-4 bg-sky-600 text-white text-[10px] px-3 py-1 rounded-full font-bold uppercase">${post.tag}</span>
+                    ${tagHTML}
                 </div>
                 <div class="p-8">
                     <h4 class="font-bold text-xl mb-3">${post.title}</h4>
@@ -219,6 +226,56 @@ function displayPosts(container, posts) {
     });
 }
 
+/** Fonction de chargement et tri des Flyers du plus récent au plus ancien **/
+async function loadCMSFlyers(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    try {
+        const owner = "camelDOUMTSOP";
+        const repo = "le-site-de-Dr-fouenang-propre-sans-CMS";
+        const path = "content/flyers";
+
+        const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error();
+
+        const files = await response.json();
+        const jsonFiles = files.filter(file => file.name.endsWith('.json'));
+
+        if (jsonFiles.length === 0) {
+            container.innerHTML = `<p class="text-slate-400 text-center w-full py-10">Aucune promotion active pour le moment.</p>`;
+            return;
+        }
+
+        const fetchPromises = jsonFiles.map(file => fetch(file.download_url).then(res => res.json()));
+        const flyers = await Promise.all(fetchPromises);
+
+        // TRI : Du plus récent au plus ancien basé sur le champ "date" du CMS
+        flyers.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        window._totalFlyers = flyers.length;
+
+        container.innerHTML = '';
+        flyers.forEach(flyer => {
+            container.innerHTML += `
+                <div class="shrink-0 w-full md:w-1/3 p-4 text-center" style="flex: 0 0 auto;">
+                    <div class="bg-white rounded-[2rem] p-6 shadow-sm hover:shadow-md transition">
+                        <div class="aspect-[3/4] bg-slate-50 rounded-2xl overflow-hidden mb-4">
+                            <img src="${flyer.image}" class="w-full h-full object-cover" alt="${flyer.title}">
+                        </div>
+                        <h5 class="font-bold text-lg text-slate-800 line-clamp-1">${flyer.title}</h5>
+                    </div>
+                </div>`;
+        });
+
+    } catch (error) {
+        console.warn("Impossible de charger les flyers :", error);
+        container.innerHTML = `<p class="text-slate-400 text-center w-full py-10">Retrouvez nos actualités sur nos réseaux sociaux.</p>`;
+    }
+}
+
 /** NAVIGATION SLIDERS **/
 let gIdx = 0;
 function slideGallery(dir) {
@@ -226,6 +283,21 @@ function slideGallery(dir) {
     if(!track) return;
     gIdx = (gIdx + dir + GALLERY_ITEMS.length) % GALLERY_ITEMS.length;
     track.style.transform = `translateX(-${gIdx * 100}%)`;
+}
+
+let flyIdx = 0;
+function slideFlyers(dir) {
+    const track = document.getElementById('flyers-slider');
+    const total = window._totalFlyers || 0;
+    if (!track || total === 0) return;
+
+    const isDesktop = window.innerWidth >= 768;
+    const maxSteps = isDesktop ? Math.max(1, total - 2) : total;
+
+    flyIdx = (flyIdx + dir + maxSteps) % maxSteps;
+    
+    const moveAmount = isDesktop ? (flyIdx * 33.333) : (flyIdx * 100);
+    track.style.transform = `translateX(-${moveAmount}%)`;
 }
 
 let baIdx = 0;
@@ -243,20 +315,16 @@ function closeModal() { document.getElementById('modal-rdv')?.classList.replace(
 function openBlog(index) {
     const post = (window._allPosts || BLOG_POSTS)[index];
     
-    // Si le contenu vient du CMS, on nettoie et formate le texte proprement
     let formattedContent = post.content || post.body || '';
     
-    // Si c'est du texte brut/markdown, on convertit les **gras** et les sauts de ligne
     if (formattedContent && !formattedContent.includes('<p>')) {
         formattedContent = formattedContent
-            // Convertit les **texte** en <strong>texte</strong>
             .replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-800 font-bold">$1</strong>')
-            // Convertit les sauts de ligne doubles en paragraphes
             .split('\n\n').map(para => `<p class="mb-4 text-slate-600 leading-relaxed">${para}</p>`).join('');
     }
 
     document.getElementById('blog-modal-img').src = post.img;
-    document.getElementById('blog-modal-tag').textContent = post.tag;
+    document.getElementById('blog-modal-tag').textContent = post.tag || 'Actualité';
     document.getElementById('blog-modal-title').textContent = post.title;
     document.getElementById('blog-modal-content').innerHTML = formattedContent;
     
@@ -269,6 +337,7 @@ function closeBlog() {
     document.body.style.overflow = '';
 }
 
+/** URGENCE **/
 function openUrgence() {
     document.getElementById('modal-urgence').classList.replace('hidden', 'flex');
     document.body.style.overflow = 'hidden';
@@ -282,6 +351,13 @@ function closeUrgence() {
 function envoyerUrgence() {
     const name = document.getElementById('u-name').value.trim() || 'Patient';
     const type = document.getElementById('u-type').value;
+    
+    // Sécurité additionnelle pour le motif d'urgence
+    if (!type || type === "") {
+        alert("Veuillez sélectionner le type d'urgence.");
+        return;
+    }
+
     const text = `🚨 *URGENCE DENTAIRE*\n\nBonjour Dr Patrick FOUENANG,\n\nJe suis *${name}* et j'ai besoin d'une consultation urgente.\n\n*Motif :* ${type}\n\nMerci de me rappeler dès que possible.`;
     window.open(`https://wa.me/237699485207?text=${encodeURIComponent(text)}`, '_blank');
     closeUrgence();

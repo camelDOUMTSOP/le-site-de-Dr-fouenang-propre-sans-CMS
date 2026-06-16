@@ -8,7 +8,7 @@ public_folder: "/images/uploads"
 collections:
   - name: "blog"
     label: "Articles de Blog"
-    folder: "content/blog" # Le CMS crée un fichier par article ici
+    folder: "content/blog"
     create: true
     slug: "{{slug}}"
     extension: "json"
@@ -18,3 +18,15 @@ collections:
       - { label: "Description courte", name: "desc", widget: "string" }
       - { label: "Image de couverture", name: "img", widget: "image" }
       - { label: "Contenu de l'article", name: "content", widget: "markdown" }
+
+  - name: "flyers"
+    label: "Flyers & Promotions"
+    folder: "content/flyers"
+    create: true
+    slug: "flyer-{{year}}-{{month}}-{{day}}"
+    extension: "json"
+    format: "json"
+    fields:
+      - { label: "Titre de la promotion / Événement", name: "title", widget: "string" }
+      - { label: "Date de publication", name: "date", widget: "date", default: "" }
+      - { label: "Le Visuel (Flyer)", name: "image", widget: "image" }
