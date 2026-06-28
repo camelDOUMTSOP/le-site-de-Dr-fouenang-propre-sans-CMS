@@ -2,6 +2,8 @@ backend:
   name: github
   repo: camelDOUMTSOP/le-site-de-Dr-fouenang-propre-sans-CMS
   branch: main
+  base_url: https://drpatrickfouenang.com
+  auth_endpoint: /api/auth
 
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
