@@ -1,9 +1,7 @@
 backend:
-  name: github
-  repo: camelDOUMTSOP/le-site-de-Dr-fouenang-propre-sans-CMS
+  name: git-gateway
   branch: main
-  base_url: https://drpatrickfouenang.com
-  auth_endpoint: /api/auth
+  base_url: https://cabinet-fouenang.netlify.app
 
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
