@@ -1,5 +1,6 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: camelDOUMTSOP/le-site-de-Dr-fouenang-propre-sans-CMS
   branch: main
 
 media_folder: "images/uploads"
@@ -8,25 +9,24 @@ public_folder: "/images/uploads"
 collections:
   - name: "blog"
     label: "Articles de Blog"
-    folder: "content/blog"
+    folder: "_posts/blog"
     create: true
     slug: "{{slug}}"
-    extension: "json"
-    format: "json"
     fields:
-      - { label: "Titre de l'article", name: "title", widget: "string" }
-      - { label: "Description courte", name: "desc", widget: "string" }
-      - { label: "Image de couverture", name: "img", widget: "image" }
-      - { label: "Contenu de l'article", name: "content", widget: "markdown" }
+      - { label: "Titre", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Image", name: "image", widget: "image" }
+      - { label: "Catégorie", name: "tag", widget: "string" }
+      - { label: "Résumé", name: "desc", widget: "string" }
+      - { label: "Contenu", name: "body", widget: "markdown" }
 
   - name: "flyers"
     label: "Flyers & Promotions"
-    folder: "content/flyers"
+    folder: "_posts/flyers"
     create: true
-    slug: "flyer-{{year}}-{{month}}-{{day}}"
-    extension: "json"
-    format: "json"
+    slug: "{{slug}}"
     fields:
-      - { label: "Titre de la promotion / Événement", name: "title", widget: "string" }
-      - { label: "Date de publication", name: "date", widget: "date", default: "" }
-      - { label: "Le Visuel (Flyer)", name: "image", widget: "image" }
+      - { label: "Titre", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Image du flyer", name: "image", widget: "image" }
+      - { label: "Description", name: "desc", widget: "string" }
