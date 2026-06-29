@@ -2,6 +2,9 @@ backend:
   name: git-gateway
   branch: main
 
+# Activation de la langue française
+locale: 'fr'
+
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
 
@@ -24,8 +27,7 @@ collections:
     folder: "_posts/flyers"
     create: true
     slug: "{{slug}}"
+    # Version ultra-simplifiée :
     fields:
-      - { label: "Titre", name: "title", widget: "string" }
-      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Nom de la promotion (ex: Flyer Juin)", name: "title", widget: "string" }
       - { label: "Image du flyer", name: "image", widget: "image" }
-      - { label: "Description", name: "desc", widget: "string" }
