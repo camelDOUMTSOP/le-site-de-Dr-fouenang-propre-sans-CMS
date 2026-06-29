@@ -156,6 +156,22 @@
             <div id="services-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
         </div>
     </section>
+    <!-- SECTION FLYERS / PROMOTIONS -->
+    <section id="promotions" class="py-24 bg-white overflow-hidden">
+        <div class="container mx-auto px-4 text-center mb-12">
+            <h2 class="text-3xl font-bold text-slate-900 uppercase">Nos Offres & Actualités</h2>
+            <div class="h-1.5 w-24 bg-sky-600 mx-auto mt-4 rounded-full"></div>
+        </div>
+        <div class="max-w-6xl mx-auto relative px-4">
+            <div class="overflow-hidden py-4">
+                <!-- C'est ici que le script va injecter les flyers -->
+                <div id="flyers-slider" class="flex transition-transform duration-700 ease-in-out gap-4"></div>
+            </div>
+            <!-- Boutons de navigation du slider -->
+            <button onclick="slideFlyers(-1)" class="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 text-sky-600 rounded-full shadow-lg z-10 hover:bg-sky-50 transition"><i class="fas fa-chevron-left"></i></button>
+            <button onclick="slideFlyers(1)" class="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 text-sky-600 rounded-full shadow-lg z-10 hover:bg-sky-50 transition"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </section>
 
     <section id="galerie" class="py-24 bg-white overflow-hidden">
         <div class="container mx-auto px-4 text-center mb-12">
