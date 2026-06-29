@@ -3,7 +3,6 @@
 const SERVICES = [
     { title: "Prothèses Fixes & Bridges", desc: "Retrouvez le confort d'une dentition complète et fonctionnelle. Nos bridges céramo-métalliques permettent de remplacer une ou plusieurs dents manquantes en s'appuyant sur les dents voisines.", icon: "fa-tooth" },
     { title: "Stomatologie", desc: "Pathologies de la bouche et des mâchoires, expertise médicale complète.", icon: "fa-stethoscope" },
-    { title: "Chirurgie Dentaire", desc: "Interventions chirurgicales complexes et extractions sécurisées.", icon: "fa-syringe" },
     { title: "Travaux de Prothèse", desc: "Conception de prothèses fixes (couronnes) et mobiles sur-mesure.", icon: "fa-teeth-open" },
     { title: "Soins Conservateurs", desc: "Traitement des caries et préservation de vos dents naturelles.", icon: "fa-shield-heart" },
     { title: "Esthétique Dentaire", desc: "Blanchiment professionnel et facettes pour un sourire parfait.", icon: "fa-wand-magic-sparkles" }
@@ -131,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* --- BLOG (Lecture directe des fichiers JSON du CMS) --- */
+    /* --- BLOG (Lecture directe du fichier JSON généré) --- */
     const bGrid = document.getElementById('blog-grid');
     if (bGrid) {
         loadCMSPosts(bGrid);
@@ -163,34 +162,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-/** Fonction de chargement automatique via GitHub API (Blog) **/
+/** Fonction de chargement du Blog via data.json **/
 async function loadCMSPosts(container) {
     try {
-        const owner = "camelDOUMTSOP";
-        const repo = "le-site-de-Dr-fouenang-propre-sans-CMS";
-        const path = "content/blog";
-
-        const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
-        const response = await fetch(url);
+        const response = await fetch('/data.json');
         
         if (!response.ok) {
-            throw new Error("Dossier CMS non encore créé ou vide");
+            throw new Error("Fichier data.json non généré ou introuvable");
         }
 
-        const files = await response.json();
-        const jsonFiles = files.filter(file => file.name.endsWith('.json'));
+        const data = await response.json();
 
-        if (jsonFiles.length === 0) {
+        if (!data.blog || data.blog.length === 0) {
             window._allPosts = BLOG_POSTS;
             displayPosts(container, window._allPosts);
             return;
         }
 
-        const fetchPromises = jsonFiles.map(file => 
-            fetch(file.download_url).then(res => res.json())
-        );
+        // Mapping des champs du CMS vers la structure attendue par l'UI
+        const cmsPosts = data.blog.map(post => ({
+            tag: post.tag || 'Actualité',
+            title: post.title,
+            desc: post.desc,
+            img: post.image,      // image venant du CMS
+            content: post.body,   // body venant du CMS
+            date: post.date
+        }));
 
-        const cmsPosts = await Promise.all(fetchPromises);
+        // Optionnel : Trier par date
+        cmsPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
         
         window._allPosts = [...cmsPosts, ...BLOG_POSTS];
         displayPosts(container, window._allPosts);
@@ -226,31 +226,24 @@ function displayPosts(container, posts) {
     });
 }
 
-/** Fonction de chargement et tri des Flyers du plus récent au plus ancien **/
+/** Fonction de chargement des Flyers via data.json **/
 async function loadCMSFlyers(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
     try {
-        const owner = "camelDOUMTSOP";
-        const repo = "le-site-de-Dr-fouenang-propre-sans-CMS";
-        const path = "content/flyers";
-
-        const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
-        const response = await fetch(url);
+        const response = await fetch('/data.json');
         
         if (!response.ok) throw new Error();
 
-        const files = await response.json();
-        const jsonFiles = files.filter(file => file.name.endsWith('.json'));
+        const data = await response.json();
 
-        if (jsonFiles.length === 0) {
+        if (!data.flyers || data.flyers.length === 0) {
             container.innerHTML = `<p class="text-slate-400 text-center w-full py-10">Aucune promotion active pour le moment.</p>`;
             return;
         }
 
-        const fetchPromises = jsonFiles.map(file => fetch(file.download_url).then(res => res.json()));
-        const flyers = await Promise.all(fetchPromises);
+        const flyers = data.flyers;
 
         // TRI : Du plus récent au plus ancien basé sur le champ "date" du CMS
         flyers.sort((a, b) => new Date(b.date) - new Date(a.date));
