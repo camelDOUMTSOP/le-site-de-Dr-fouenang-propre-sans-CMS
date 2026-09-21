@@ -9,28 +9,28 @@ const SERVICES = [
 ];
 
 const GALLERY_ITEMS = [
-    { type: 'image', src: 'GAL1.jpg' },
-    { type: 'image', src: 'GAL2.jpg' },
-    { type: 'image', src: 'GAL3.jpg' },
-    { type: 'image', src: 'GAL4.jpg' },
-    { type: 'image', src: 'GAL5.jpg' },
-    { type: 'image', src: 'GAL6.jpg' },
-    { type: 'image', src: 'GAL7.jpg' },
-    { type: 'image', src: 'GAL8.jpg' },
-    { type: 'image', src: 'GAL10.jpg' },
-    { type: 'image', src: 'GAL11.jpg' },
-    { type: 'image', src: 'GAL13.jpg' },
-    { type: 'image', src: 'GAL14.jpg' }
+    { type: 'image', src: 'GAL1.webp' },
+    { type: 'image', src: 'GAL2.webp' },
+    { type: 'image', src: 'GAL3.webp' },
+    { type: 'image', src: 'GAL4.webp' },
+    { type: 'image', src: 'GAL5.webp' },
+    { type: 'image', src: 'GAL6.webp' },
+    { type: 'image', src: 'GAL7.webp' },
+    { type: 'image', src: 'GAL8.webp' },
+    { type: 'image', src: 'GAL10.webp' },
+    { type: 'image', src: 'GAL11.webp' },
+    { type: 'image', src: 'GAL13.webp' },
+    { type: 'image', src: 'GAL14.webp' }
 ];
 
 const BEFORE_AFTER = [
-    { title: 'Cas Clinique #1', img: 'AVAP1.jpg' },
-    { title: 'Cas Clinique #2', img: 'AVAP2.jpg' },
-    { title: 'Cas Clinique #3', img: 'AV AP3.jpg' },
-    { title: 'Cas Clinique #4', img: 'AV AP4.jpg' },
-    { title: 'Cas Clinique #5', img: 'AVAP3.jpg' },
-    { title: 'Cas Clinique #6', img: 'AVAP6.jpg' },
-    { title: 'Cas Clinique #7', img: 'AVAP7.jpg' }
+    { title: 'Cas Clinique #1', img: 'AVAP1.webp' },
+    { title: 'Cas Clinique #2', img: 'AVAP2.webp' },
+    { title: 'Cas Clinique #3', img: 'AV AP3.webp' },
+    { title: 'Cas Clinique #4', img: 'AV AP4.webp' },
+    { title: 'Cas Clinique #5', img: 'AVAP3.webp' },
+    { title: 'Cas Clinique #6', img: 'AVAP6.webp' },
+    { title: 'Cas Clinique #7', img: 'AVAP7.webp' }
 ];
 
 // Articles de secours (Fallback si le CMS n'a pas encore publié d'articles)
@@ -39,7 +39,7 @@ const BLOG_POSTS = [
         tag: 'Conseil',
         title: 'Brossage : les 5 erreurs que tout le monde fait',
         desc: 'Durée trop courte, mauvaise technique... Le Dr Fouenang décrypte les erreurs les plus fréquentes.',
-        img: './blog brossage.jpeg',
+        img: './blog brossage.webp',
         content: `
             <p>Le brossage des dents est un geste quotidien que nous faisons tous, mais très peu le font correctement. Voici les 5 erreurs les plus fréquentes observées au cabinet par le Dr Patrick Fouenang.</p>
             <h4 class="font-bold text-slate-800 text-base mt-4">1. Se brosser les dents trop vite</h4>
@@ -59,7 +59,7 @@ const BLOG_POSTS = [
         tag: 'Prévention',
         title: 'Pourquoi le détartrage est indispensable ?',
         desc: 'Le tartre est invisible au quotidien mais ravage vos gencives en silence.',
-        img: './detartrage.jpeg',
+        img: './detartrage.webp',
         content: `
             <p>Beaucoup de patients pensent que le détartrage est une simple formalité esthétique. En réalité, c'est un acte médical essentiel pour préserver votre santé bucco-dentaire sur le long terme.</p>
             <h4 class="font-bold text-slate-800 text-base mt-4">Qu'est-ce que le tartre ?</h4>
@@ -282,15 +282,20 @@ let flyIdx = 0;
 function slideFlyers(dir) {
     const track = document.getElementById('flyers-slider');
     const total = window._totalFlyers || 0;
-    if (!track || total === 0) return;
+    if (!track || total === 0 || !track.children.length) return;
 
     const isDesktop = window.innerWidth >= 768;
-    const maxSteps = isDesktop ? Math.max(1, total - 2) : total;
+    const visibleCount = isDesktop ? 3 : 1;
+    const maxSteps = Math.max(1, total - visibleCount + 1);
 
     flyIdx = (flyIdx + dir + maxSteps) % maxSteps;
-    
-    const moveAmount = isDesktop ? (flyIdx * 33.333) : (flyIdx * 100);
-    track.style.transform = `translateX(-${moveAmount}%)`;
+
+    // Le pas doit inclure le gap entre cartes (gap-4), sinon translateX en %
+    // (basé sur la largeur de la piste, gap exclu) dérive au fil des clics.
+    const cardWidth = track.children[0].getBoundingClientRect().width;
+    const gapPx = parseFloat(getComputedStyle(track).columnGap) || 0;
+    const moveAmount = flyIdx * (cardWidth + gapPx);
+    track.style.transform = `translateX(-${moveAmount}px)`;
 }
 
 let baIdx = 0;

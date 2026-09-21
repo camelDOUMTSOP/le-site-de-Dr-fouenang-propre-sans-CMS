@@ -1,7 +1,7 @@
 ---
 title: Pourquoi vos gencives saignent-elles (et comment y remédier) ?
 date: 2026-07-12T14:33:00.000+01:00
-image: /images/uploads/img-20260630-wa0318.jpg
+image: /images/uploads/img-20260630-wa0318.webp
 tag: Vous brossez vos dents le matin, vous rincez, et vous remarquez des traces
   de sang dans le lavabo.
 desc: "Ne vous arrêtez pas de brosser : C’est l’erreur la plus courante. Par
