@@ -1,1 +1,6 @@
 /admin/* /admin/:splat 200
+
+# Empeche Cloudflare Pages de rediriger ce fichier vers l'URL sans .html
+# (comportement "clean URLs" par defaut) : Google Search Console exige un
+# 200 direct sur l'URL exacte pour la methode de verification "Fichier HTML".
+/google6e43c290dcab2ab8.html /google6e43c290dcab2ab8.html 200
