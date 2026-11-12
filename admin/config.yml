@@ -1,8 +1,17 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: camelDOUMTSOP/le-site-de-Dr-fouenang-propre-sans-CMS
   branch: main
+  # Service de connexion GitHub (Cloudflare Worker "sveltia-cms-auth")
+  # dédié au site Fouenang.
+  base_url: https://drfouenang-cms-login.lecoindevcamel.workers.dev
+  commit_messages:
+    create: 'Ajoute {{collection}} « {{slug}} »'
+    update: 'Modifie {{collection}} « {{slug}} »'
+    delete: 'Supprime {{collection}} « {{slug}} »'
+    uploadMedia: 'Ajoute l’image « {{path}} »'
+    deleteMedia: 'Supprime l’image « {{path}} »'
 
-# Activation de la langue française
 locale: 'fr'
 
 media_folder: "images/uploads"
@@ -11,23 +20,33 @@ public_folder: "/images/uploads"
 collections:
   - name: "blog"
     label: "Articles de Blog"
+    label_singular: "Article"
     folder: "_posts/blog"
     create: true
     slug: "{{slug}}"
+    sortable_fields: ['date', 'title']
     fields:
       - { label: "Titre", name: "title", widget: "string" }
-      - { label: "Date", name: "date", widget: "datetime" }
+      - label: "Date de publication"
+        name: "date"
+        widget: "datetime"
+        hint: "Date dans le futur = article programmé : il apparaîtra tout seul sur le site à cette date et heure."
       - { label: "Image", name: "image", widget: "image" }
-      - { label: "Catégorie", name: "tag", widget: "string" }
-      - { label: "Résumé", name: "desc", widget: "string" }
+      - { label: "Catégorie (ex : Prévention, Conseil, Urgence)", name: "tag", widget: "string" }
+      - { label: "Résumé (1 à 2 phrases)", name: "desc", widget: "text" }
       - { label: "Contenu", name: "body", widget: "markdown" }
 
   - name: "flyers"
     label: "Flyers & Promotions"
+    label_singular: "Flyer"
     folder: "_posts/flyers"
     create: true
     slug: "{{slug}}"
-    # Version ultra-simplifiée :
+    sortable_fields: ['date', 'title']
     fields:
-      - { label: "Nom de la promotion (ex: Flyer Juin)", name: "title", widget: "string" }
+      - { label: "Nom du flyer (ex : Flyer Juin)", name: "title", widget: "string" }
+      - label: "Date de publication"
+        name: "date"
+        widget: "datetime"
+        hint: "Laissez la date du jour pour publier tout de suite. Date dans le futur = flyer programmé."
       - { label: "Image du flyer", name: "image", widget: "image" }
