@@ -3,8 +3,8 @@ backend:
   repo: camelDOUMTSOP/le-site-de-Dr-fouenang-propre-sans-CMS
   branch: main
   # Service de connexion GitHub (Cloudflare Worker "sveltia-cms-auth")
-  # dédié au site Fouenang. A remplacer par l'adresse réelle du Worker.
-  base_url: https://REMPLACER-PAR-LE-WORKER.workers.dev
+  # dédié au site Fouenang.
+  base_url: https://drfouenang-cms-login.lecoindevcamel.workers.dev
   commit_messages:
     create: 'Ajoute {{collection}} « {{slug}} »'
     update: 'Modifie {{collection}} « {{slug}} »'
