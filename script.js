@@ -162,10 +162,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+/** Publication programmée : un élément daté dans le futur reste caché
+    jusqu'à sa date. Sans date = visible. **/
+function isPublished(item) {
+    if (!item.date) return true;
+    const d = new Date(item.date);
+    return isNaN(d) || d <= new Date();
+}
+
+/** Mise en forme Markdown simple (titres, listes, gras, italique, liens) **/
+function inlineMd(text) {
+    return text
+        .replace(/\*\*(.+?)\*\*/g, '<strong class="text-slate-800 font-bold">$1</strong>')
+        .replace(/(^|[^*])\*([^*\s][^*]*?)\*/g, '$1<em>$2</em>')
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|\/[^)\s]*)\)/g,
+            '<a href="$2" target="_blank" rel="noopener" class="text-sky-600 font-semibold underline">$1</a>');
+}
+
+function markdownToHtml(md) {
+    const blocks = md.replace(/\r\n/g, '\n').split(/\n{2,}/);
+    return blocks.map(block => {
+        const lines = block.split('\n').filter(l => l.trim());
+        if (!lines.length) return '';
+        const h = lines[0].match(/^(#{2,4})\s+(.*)$/);
+        if (h && lines.length === 1) {
+            return `<h4 class="font-bold text-slate-800 text-lg mt-6 mb-2">${inlineMd(h[2])}</h4>`;
+        }
+        if (lines.every(l => /^\s*[*-]\s+/.test(l))) {
+            return '<ul class="list-disc pl-5 space-y-2 mb-4 text-slate-600">' +
+                lines.map(l => `<li>${inlineMd(l.replace(/^\s*[*-]\s+/, ''))}</li>`).join('') + '</ul>';
+        }
+        if (lines.every(l => /^\s*\d+[.)]\s+/.test(l))) {
+            return '<ol class="list-decimal pl-5 space-y-2 mb-4 text-slate-600">' +
+                lines.map(l => `<li>${inlineMd(l.replace(/^\s*\d+[.)]\s+/, ''))}</li>`).join('') + '</ol>';
+        }
+        return `<p class="mb-4 text-slate-600 leading-relaxed">${inlineMd(lines.join('<br>'))}</p>`;
+    }).join('');
+}
+
 /** Fonction de chargement du Blog via data.json **/
 async function loadCMSPosts(container) {
     try {
-        const response = await fetch('/data.json');
+        const response = await fetch('/data.json', { cache: 'no-cache' });
         
         if (!response.ok) {
             throw new Error("Fichier data.json non généré ou introuvable");
@@ -180,7 +218,7 @@ async function loadCMSPosts(container) {
         }
 
         // Mapping des champs du CMS vers la structure attendue par l'UI
-        const cmsPosts = data.blog.map(post => ({
+        const cmsPosts = data.blog.filter(isPublished).map(post => ({
             tag: post.tag || 'Actualité',
             title: post.title,
             desc: post.desc,
@@ -232,7 +270,7 @@ async function loadCMSFlyers(containerId) {
     if (!container) return;
 
     try {
-        const response = await fetch('/data.json');
+        const response = await fetch('/data.json', { cache: 'no-cache' });
         
         if (!response.ok) throw new Error();
 
@@ -243,10 +281,15 @@ async function loadCMSFlyers(containerId) {
             return;
         }
 
-        const flyers = data.flyers;
+        const flyers = (data.flyers || []).filter(isPublished);
+
+        if (flyers.length === 0) {
+            container.innerHTML = `<p class="text-slate-400 text-center w-full py-10">Aucune promotion active pour le moment.</p>`;
+            return;
+        }
 
         // TRI : Du plus récent au plus ancien basé sur le champ "date" du CMS
-        flyers.sort((a, b) => new Date(b.date) - new Date(a.date));
+        flyers.sort((a, b) => (new Date(b.date || 0)) - (new Date(a.date || 0)));
 
         window._totalFlyers = flyers.length;
 
@@ -316,9 +359,7 @@ function openBlog(index) {
     let formattedContent = post.content || post.body || '';
     
     if (formattedContent && !formattedContent.includes('<p>')) {
-        formattedContent = formattedContent
-            .replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-800 font-bold">$1</strong>')
-            .split('\n\n').map(para => `<p class="mb-4 text-slate-600 leading-relaxed">${para}</p>`).join('');
+        formattedContent = markdownToHtml(formattedContent);
     }
 
     document.getElementById('blog-modal-img').src = post.img;
